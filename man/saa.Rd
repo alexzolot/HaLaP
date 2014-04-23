@@ -1,0 +1,19 @@
+\name{saa}
+\alias{saa}
+\title{saa}
+\usage{
+saa(ds, dsn = deparse(substitute(ds)), ...)
+}
+\description{
+== output - input == save object or all and print reminder
+p dsn name for out file
+}
+\examples{
+\dontrun{
+	saa(,'111')
+# 2013-06-18 12:15:31:: Saved: load('m:/80_ChurnSim/out/111.RData'); sw('m:/80_ChurnSim/out')  # rmDF(); lsDF(); dir(); expl()
+
+	saa()
+# 2013-06-18 12:15:38:: Saved: load('m:/80_ChurnSim/out/.RData'); sw('m:/80_ChurnSim/out')  # rmDF(); lsDF(); dir(); expl()
+}
+
