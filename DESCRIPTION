@@ -1,0 +1,13 @@
+Package: HaLaP
+Title: HaLaP  - Miscellaneous aliases and functions
+Description: HLP - Miscellaneous aliases and functions that I use the most
+    often during project initiation, in progress, leaving and coming back for a
+    book \"Handling Large R Projects\"
+Version: 0.1
+Author: Alex Zolot <alex.zolot@gmail.com>
+Maintainer: Alex Zolot <alex.zolot@gmail.com>
+Depends:
+    R (>= 3.0.2),
+    plyr
+License: GPL-2
+LazyData: true
