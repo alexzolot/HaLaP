@@ -22,19 +22,11 @@
 #' @docType package
 NULL
 
-"Package: HaLaP
-Title: HaLaP  - Miscellaneous aliases and functions
-Description: HaLaP  - Miscellaneous aliases and functions that I use the most often 
- during project initiation, in progress, leaving and coming back
- for a book \"Handling Large R Projects\"
-Version: 0.1
-Author: Alex Zolot <alex.zolot@gmail.com>
-Maintainer: Alex Zolot <alex.zolot@gmail.com>
-Depends: R (>= 3.0.2), plyr
-License: GPL-2
-LazyData: true"
-
 #=====  Funcs for Tutorial UseR!-2013  =====
+
+#' abbreviations: ds - dataset, patt - pattern, pattNeg - negative pattern,  #ex:  - example 
+
+#=====  Funcs for book HLRP  =====
 #=====  General purpose helper functions and aliases  =====
 
 # xxx : saa, sa() -> sa()
@@ -81,12 +73,12 @@ prr= function(x, ma='', header=T) {if(header)catf('\n&&& %s == %s ==\n', ma, dep
 	#for(xx in if(is.null(ns)) 1:le(x) else ns) catt(xx, '=', x[[xx]]); catt('-------------------------\n')} # test with gff ex: prr(cars, 'Cars')
      for(xx in if(is.null(ns)) 1:le(x) else ns) catf('%3s= %s\n', xx,  x[[xx]]); catt('-------------------------\n')} # test with gff ex: prr(cars, 'Cars')
 
-#' wrapper for paste
+#w for paste
 pas= function(x, sep=' ',collapse=' ')paste(x,sep=sep,collapse=collapse)
 #' wrapper for grep
 gre2= function(patt='', pattNeg='^$', x, v=T, ...){ a=grepl(patt, x,...) & !grepl(pattNeg, x,...); return( if(v) x[a] else a) }
 
-#' wrapper for grep + names + subset
+#w for grep + names + subset
 #ex: suss('Se', 'Wi',  iris, Sepal.Length < 4.5 )
 suss= function(patt='', pattNeg='^$', x, ...) {
 	cols= grepl(patt, colnames(x)) & !grepl(pattNeg, colnames(x))  # gna(patt, pattNeg, x)  
@@ -143,10 +135,12 @@ ww= function(k=10, ...) if(onWin){
 
 #' date &  time 
 DT= DateTime= function(format = "%Y-%m-%d %H:%M:%S") strftime(Sys.time(), format) #ex: DT()
+
 #' wrapper for NROW + head
 #e hee(cars)
 hee= function(ds, h=9){catf('\n%s, %s rows x  %s cols,  %s Mb :\n', deparse(substitute(ds)), NROW(ds), NCOL(ds), round(object.size(ds)/2^20, 1)); print(hh<-head(ds,h)); catf('# he(suss(,, %s[ , cn("%s")]), 5)\n',deparse(substitute(ds)), nmsv(ds, deparse(substitute(ds))));invisible(hh)}
 
+#' play sound (after long count)
 aaa= function(n=20) for(i in 1:n) {cat('\aaa '); flush.console()}  # sound when done 
 
 #' wrapper for cat + sprintf
@@ -164,7 +158,9 @@ exec= function(s) shell(s, wait=T, intern = T)
 expl= function(x= gw()) shell(sf('start explorer %s', gsub('/','\\\\', x)))
 
 #w getwd
-gw= function(){catf('gw: sw("%s");  expl()\n', gw<- getwd()); invisible(gw)} #e  gw()
+#e gw()
+gw= function(){catf('gw: sw("%s");  expl()\n', gw<- getwd()); invisible(gw)} 
+
 #w [dir.create] + setwd
 sw= function (sDir, ...) {
 	dir.create(sDir, rec=T, ...)
@@ -173,7 +169,7 @@ sw= function (sDir, ...) {
 }
 
 #' x \ y
-#r    x  which are not in  y
+#r  x  which are not in  y
 #e  nin(1:6, 4:9);  1:6 %-% 4:9
 nin= '%-%' = function(x, y) x[!(x %in% y)] # x not in y :   1:5 %-%  4:9 # `%-%` 
 
@@ -228,7 +224,7 @@ lsDF= function(.all=F, ...){ b= mdply(ls(envir= .GlobalEnv, ... ), function(a){i
 rmall= function() rm(list=ls(envir = .GlobalEnv), envir = .GlobalEnv) # rmall()
 
 #' rm  all Data Frames, lists, matrixes
-#e  rmDF()
+#e rmDF()
 rmDF= function(...) invisible(mdply(ls(envir =.GlobalEnv,... ),function(a){aa= get(a); b= df()
 						if( class(aa)[1] %in% c('list')){catf('rm  %-20s %-30s\n', a, sNames(aa)); do.call(rm, list(a), envir =.GlobalEnv)}
 						if( class(aa)[1] %in% c('data.frame','matrix')){catf('rm  %-20s %5s %3s %-30s\n', a, nrow(aa), ncol(aa), substr(sNames(aa),1,4999))
@@ -277,8 +273,7 @@ if(0){ # examples
 #'	saa()
 #'# 2013-06-18 12:15:38:: Saved: load('m:/80_ChurnSim/out/.RData'); sw('m:/80_ChurnSim/out')  # rmDF(); lsDF(); dir(); expl()
 #'	
-#e data(cars); saa(cars)
-#  2013-06-18 12:15:46:: Saved: load('m:/80_ChurnSim/out/users3.RData'); sw('m:/80_ChurnSim/out')
+#' data(cars); saa(cars)
 #' }
 saa= function(ds, dsn= deparse(substitute(ds)) , ...){file= sf('%s.RData', dsn)
 	save(list = if(missing(ds)) ls(all=TRUE) else  dsn, file=file, ...); 
@@ -290,6 +285,55 @@ saa= function(ds, dsn= deparse(substitute(ds)) , ...){file= sf('%s.RData', dsn)
 sa= function(file=''){save.image(file=sf('%s.RData', file)); catf("%s:: Image saved: lo('%s/%s.RData'); sw('%2$s')  # rmDF(); lsDF(); dir(); expl()\n", Sys.time(), gw(), file)}
 lo= function(file='.RData'){catt('Loaded:', ll<- pas(load(file=file, .GlobalEnv))); lss(); cat('\a\a\a'); alarm();ll} # expl("C:/Users/Public/Music/Sample Music/Kalimba.mp3")} # expl("Z:/exe/testVoice.vbs")}
 
+
+#w save or save.image
+#p ... 0, 1, or 2 args
+#' 0 - save.image
+#' 1 -if char with  le=1 it is file , else object to save
+#' 2 - first is obj, second is file name
+sa2= saaa= function(...){
+	dots <- list(...)                  
+	ar= deparse(substitute(...))
+	#strr(ar); strr(dots); catt('na(dots)=', na(dots), class(last(dots)), '====\n'); return(invisible(NULL))
+	
+	if(0){
+		file=  if(le(dots) == 0) '' else if(class(dots[[1]])=='character' &&  le(dots[[1]])==1) dots[[1]] else if(le(dots) == 1) ar[1] else dots[[2]]
+		catf('file=%s.Rdata===\n', file)
+	}
+	
+	if(le(dots) == 0){save.image(file='.RData'); catf("%s:: Image saved: lo('%s/.RData'); sw('%2$s')  # rmDF(); lsDF(); dir(); expl()\n", Sys.time(), gw())
+	} else if(le(dots)==1 && le(dots[[1]])==1 && class(dots[[1]])=='character'){
+		file= dots[[1]]
+		save.image(file=sf('%s.RData', file)); catf("%s:: Image saved: lo('%s/%s.RData'); sw('%2$s')  # rmDF(); lsDF(); dir(); expl()\n", Sys.time(), gw(), file)
+	} else if(le(dots)==1  && NROW(dots[[1]]) >1 ) {  
+		file= sf('%s.RData', ar[[1]])
+		save(list=ar, file=file); 
+		catf("%s::  %s  saved: lo('%s/%s'); sw('%3$s')  # rmDF(); lsDF(); dir(); expl()\n", Sys.time(), ar[[1]], getwd(), file)
+	} else if(le(dots)==2 && NROW(dots[[2]])==1 && class(dots[[2]]) =='character'){
+		x= deparse(substitute(dots[[1]]))
+		file= sf('%s.RData', dots[[2]])
+		save(list=ar[[1]], file=file); 
+		catf("%s::  %s  saved: lo('%s/%s'); sw('%3$s')  # rmDF(); lsDF(); dir(); expl()\n", Sys.time(), ar[[1]], getwd(), file) 
+	} else {message('Wrong args');  strr(ar); strr(dots)}
+}
+
+if (0) {
+	sa2()
+	# 2014-04-04 16:22:51:: Image saved: lo('m:/50_HLP/out/.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
+	
+	sa2('z')
+	# 2014-04-04 16:25:07:: Image saved: lo('m:/50_HLP/out/z.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
+	
+	sa2(cars)
+	# 2014-04-04 20:52:11::  s  saved: lo('m:/50_HLP/out/s.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
+	
+	sa2(cars, 'z')
+	# 2014-04-04 20:52:18::  s  saved: lo('m:/50_HLP/out/z.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
+	gw()
+	loo()	
+}
+
+
 #' list of ../out/.RData files 
 #e  loo()
 loo= function(patt='.RData'){gw(); 
@@ -299,10 +343,10 @@ loo= function(patt='.RData'){gw();
 								, lo=sf('lo("%s")',f))), ~mtime)
 	} else warning(sf('no %s files in the directory %s', patt, gw()))
 	}	
+#' saved & remove
+#e  \dontrun{	ca= cars; srm(ca)	# creates ca.RData}
+srm= function(x) {saa(x, dsx<- deparse(substitute(x)) ); rm(list= dsx, envir = .GlobalEnv); catf('\n!!!    %s  is saved & removed  !!!\n', dsx)}
 
-#' save & remove
-#e ca= cars; srm(ca); ls(pattern='ca'); dir(patt='ca')	# creates ca.RData
-srm= function(x) {dsx= deparse(substitute(x)); saa(x, dsx); rm(list= dsx, envir = .GlobalEnv); catf('\n!!!    %s  is saved & removed  !!!\n', dsx)}
 
 #' save an object to .csv
 #w for write.csv 
@@ -312,22 +356,19 @@ totsv= function(ds, dsn= sf('%s.tsv', deparse(substitute(ds))), ...){ write.tabl
 	catf("Saved: %s= read.delim('%s/%s'); expl('%2$s/%3$s')\n ", deparse(substitute(ds)), gw(), dsn)} 
 
 
-#' sort.data.frame
-#e hee(srt(CO2, ~conc - uptake))
+#' Sort Data Frame
+	#' Author: Kevin Wright
+	#' with some ideas from Andy Liaw
+	#' http://tolstoy.newcastle.edu.au/R/help/04/07/1076.html
+	
+	#p x: A data.frame
+	#p by: A one-sided formula using + for ascending and - for descending
+	#'     Sorting is left to right in the formula
+	
+	#' Useage is:
+	# srt(cars, by= ~speed - dist)
 srt= sortt= sort.data.frame= function(x, by){
-	# Author: Kevin Wright
-	# with some ideas from Andy Liaw
-	# http://tolstoy.newcastle.edu.au/R/help/04/07/1076.html
-	
-	# x: A data.frame
-	# by: A one-sided formula using + for ascending and - for descending
-	#     Sorting is left to right in the formula
-	
-	# Useage is:
-	# library(nlme);
-	# data(Oats)
-	# sort(Oats, by= ~nitro-Variety)
-	#brr()
+
 	
 	if(by[[1]] != "~")
 		stop("Argument 'by' must be a one-sided formula.")
