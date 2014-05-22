@@ -22,9 +22,8 @@
 #' @docType package
 NULL
 
-#=====  Funcs for Tutorial UseR!-2013  =====
 
-#' abbreviations: ds - dataset, patt - pattern, pattNeg - negative pattern,  #ex:  - example 
+#' abbreviations: ds - dataset, patt - pattern, pattNeg - negative pattern,  #ex: ,  #e  - example ,  #en  - example don't run
 
 #=====  Funcs for book HLRP  =====
 #=====  General purpose helper functions and aliases  =====
@@ -55,31 +54,34 @@ trb= traceback
 #e  cn('aa bb 2013')
 cn= function(cnn,  sep='[ ,\n\t\\+]+') unlist(strsplit(cnn, sep))  # b='',`%a%` = '%c%' =  col.names= cn(cnn)  'aa b 1'  %a% 1  aa b 1'  cn('aa b 1')
 
-#' do nothing
+#' do nothing - when we need temporary disable a function f,  use f= dummy  
 dummy= function(...) invisible()
+
 #' fun to paste column names,  inverse to cn()
 #e nc(cars)
 nc= nmsv= sNames= function(ds, nm= deparse(substitute(ds)), sep=' ', ...){x=pas(na(ds), sep, sep); catf("\nnames(%s)= cn('%s')\n", nm, x); invisible(x)} 
 
-#' wrapper for subset + paste + colNames
+#w subset + paste + colNames
 #e ncc('Wi',, iris)
-ncc= function(patt = "", pattNeg = "^$", ds) pas(gre2(patt, pattNeg, na(ds)))  #ex: ncc('Wi',, iris)
-pr= function(x){catf('==  %s  ==\n', deparse(substitute(x))); print(x)} #ex: pr(cars)
+ncc= function(patt = "", pattNeg = "^$", ds) pas(gre2(patt, pattNeg, na(ds)))
+#e pr(cars)
+pr= function(x){catf('==  %s  ==\n', deparse(substitute(x))); print(x)} 
 
 #' print list in 1 column
 #e prr(letters[1:5])
-#e prr(cars)
+#e prr(cars); prr(dir()); prr(character(0));
 prr= function(x, ma='', header=T) {if(header)catf('\n&&& %s == %s ==\n', ma, deparse(substitute(x))); ns= na(x)
-	#for(xx in if(is.null(ns)) 1:le(x) else ns) catt(xx, '=', x[[xx]]); catt('-------------------------\n')} # test with gff ex: prr(cars, 'Cars')
-     for(xx in if(is.null(ns)) 1:le(x) else ns) catf('%3s= %s\n', xx,  x[[xx]]); catt('-------------------------\n')} # test with gff ex: prr(cars, 'Cars')
+		if(le(x)==0){message('length=0'); return(0)}
+     	for(i in if(is.null(ns)) 1:le(x) else ns) catf('%3s= %s\n', i,  x[[i]]); catt('-------------------------\n')
+ 	} 
 
 #w for paste
 pas= function(x, sep=' ',collapse=' ')paste(x,sep=sep,collapse=collapse)
-#' wrapper for grep
+#w grep
 gre2= function(patt='', pattNeg='^$', x, v=T, ...){ a=grepl(patt, x,...) & !grepl(pattNeg, x,...); return( if(v) x[a] else a) }
 
 #w for grep + names + subset
-#ex: suss('Se', 'Wi',  iris, Sepal.Length < 4.5 )
+#e suss('Se', 'Wi',  iris, Sepal.Length < 4.5 )
 suss= function(patt='', pattNeg='^$', x, ...) {
 	cols= grepl(patt, colnames(x)) & !grepl(pattNeg, colnames(x))  # gna(patt, pattNeg, x)  
 	if('data.table' %in% class(x)) x[...][, cols, with=F] else subset(x, ...)[cols]
@@ -101,15 +103,16 @@ if (0) {
 #' prepare to detach redundant packages
 dett= function(patt= '^pac') catf('\ndetach("%s",  character.only = TRUE)', grep(patt, search(), v=T))  ## prepare detach redundant packages
 #' system time + sound
-st= function(...){s= system.time(...)[[3]]; aaa(); s}  #ex: st({x= 5})
+#e st({x= 5})
+st= function(...){s= system.time(...)[[3]]; aaa(); s}  
 
 #w nu * fa
-#ex: nuf(ch(CO2$Plant))
-#ex: nuf(ch(iris$Species))
+# nuf(ch(CO2$Plant))
+# nuf(ch(iris$Species))
 nuf= function(...) nu(fa(...))  # char -> fa -> nu
 
 #' compare names
-#e comp.na(cars, iris)
+#e comp.na(cars, mtcars)
 comp.na= function(x, y) {
 	catt('x & y :', pas(intersect(na(x), na(y))))
 	catt('x \\ y :', pas(setdiff(na(x), na(y))))
@@ -134,39 +137,53 @@ ww= function(k=10, ...) if(onWin){
 
 
 #' date &  time 
-DT= DateTime= function(format = "%Y-%m-%d %H:%M:%S") strftime(Sys.time(), format) #ex: DT()
+#e DT()
+DT= DateTime= function(format = "%Y-%m-%d %H:%M:%S") strftime(Sys.time(), format) 
 
-#' wrapper for NROW + head
+#w dim + head
 #e hee(cars)
 hee= function(ds, h=9){catf('\n%s, %s rows x  %s cols,  %s Mb :\n', deparse(substitute(ds)), NROW(ds), NCOL(ds), round(object.size(ds)/2^20, 1)); print(hh<-head(ds,h)); catf('# he(suss(,, %s[ , cn("%s")]), 5)\n',deparse(substitute(ds)), nmsv(ds, deparse(substitute(ds))));invisible(hh)}
 
 #' play sound (after long count)
 aaa= function(n=20) for(i in 1:n) {cat('\aaa '); flush.console()}  # sound when done 
 
-#' wrapper for cat + sprintf
+#w cat + sprintf
 catf= function(...) cat(sprintf(...))
 
-#' wrapper for cat + '\\n'
+#w cat + '\\n'
 #e catt(cars[,1])
 catt= function(...) {cat(...); cat('\n'); invisible(flush.console())} 
-#' wrapper for paste
-'%+%' = function(x, y) paste(x, y, sep= "")
+
+#'  catt with names
+#e	z= 1:5; v= letters[1:2];  catn(z, v, 7, u<-'a', v=88)
+catn= function(...) {  # catt('catn:')
+	nargs= unlist(strsplit(ch(match.call()),'(),', fixed =T))[-1]  # names of args
+	for (i in 1:le(nargs)) catt(nargs[[i]],  '= ', list(...)[[i]])
+}
+
+#w paste
+'%+%' = paste0 #function(x, y) paste(x, y, sep= "")
 
 #w shell
 exec= function(s) shell(s, wait=T, intern = T)
-#w shell + start explorer (win only)
-expl= function(x= gw()) shell(sf('start explorer %s', gsub('/','\\\\', x)))
+
+#w  browseURL  or  shell + start explorer 
+#e expl()
+# expl= function(x= gw()) shell(sf('start explorer %s', gsub('/','\\\\', x)))  # win only
+expl= function(x= gw(), ...) browseURL(x, ...)
 
 #w getwd
 #e gw()
 gw= function(){catf('gw: sw("%s");  expl()\n', gw<- getwd()); invisible(gw)} 
 
 #w [dir.create] + setwd
+#en sw('myTestDir/mySubdir');  sw('../..'); expl()
 sw= function (sDir, ...) {
 	dir.create(sDir, rec=T, ...)
 	setwd(sDir)
 	catf('sw: Work dir set to: %s;  gw()\n', gw())
 }
+
 
 #' x \ y
 #r  x  which are not in  y
@@ -227,23 +244,50 @@ rmall= function() rm(list=ls(envir = .GlobalEnv), envir = .GlobalEnv) # rmall()
 #e rmDF()
 rmDF= function(...) invisible(mdply(ls(envir =.GlobalEnv,... ),function(a){aa= get(a); b= df()
 						if( class(aa)[1] %in% c('list')){catf('rm  %-20s %-30s\n', a, sNames(aa)); do.call(rm, list(a), envir =.GlobalEnv)}
-						if( class(aa)[1] %in% c('data.frame','matrix')){catf('rm  %-20s %5s %3s %-30s\n', a, nrow(aa), ncol(aa), substr(sNames(aa),1,4999))
+						if( class(aa)[1] %in% c('data.table','data.frame','matrix')){catf('rm  %-20s %5s %3s %-30s\n', a, nrow(aa), ncol(aa), substr(sNames(aa),1,4999))
 							do.call(rm, list(a), envir= .GlobalEnv)
 						}}))
 
 #' install + library
-libra= function(libs, verb=TRUE){
+#p gh github username 
+libra= function(libs, verb=TRUE, gh=''){
 	libs= if(!grepl('\\"|\'| ', li<- deparse(substitute(libs)))) li else cn(libs)  # now libs is a char vector
 	
 	misspk= nin(libs, installed.packages()[,1])
 	
-	if(le(misspk) > 0) {install.packages(misspk, repos= "http://cran.stat.ucla.edu/", dependencies= T)}
+	if(le(misspk) > 0) {
+		if(gh==''){install.packages(misspk, repos= "http://cran.stat.ucla.edu/", dependencies= T)
+		} else {if(le(misspk) > 1) message('we can load only one github package!')
+				libra(devtools)
+			    install_github(misspk[1], gh, dependencies= T,...)
+		}
+	}
 	
 	for(li in libs){catt('libra:: Call library ', li) 
 		do.call(library, list(li, character.only =T))
 		if(verb) catf('libra:: demo(%s); example(%1$s); vignette("%1$s")\n', li)
 	}
 } #--
+
+
+#' install_github + library
+#p gh github username 
+libgh= function(libs, verb=TRUE, gh='alexzolot',...){
+	libs= if(!grepl('\\"|\'| ', li<- deparse(substitute(libs)))) li else cn(libs)  # now libs is a char vector
+	
+	misspk= nin(libs, installed.packages()[,1])
+	
+	if(le(misspk) > 0) {
+		libra(devtools)
+		install_github(misspk[1], gh, dependencies= T,...)}
+	
+	for(li in libs){catt('libra:: Call library ', li) 
+		do.call(library, list(li, character.only =T))
+		if(verb) catf('libra:: demo(%s); example(%1$s); vignette("%1$s")\n', li)
+	}
+} #--
+
+
 
 if(0){ # examples 
 	libra(libs= "locfit tkrplot xtable")
@@ -281,7 +325,9 @@ saa= function(ds, dsn= deparse(substitute(ds)) , ...){file= sf('%s.RData', dsn)
 	if(missing(ds)) catt('  # rmDF(); lsDF(); dir(); expl()')
 } 
 
-
+#w save.image
+#en sa()
+#en sa(2)
 sa= function(file=''){save.image(file=sf('%s.RData', file)); catf("%s:: Image saved: lo('%s/%s.RData'); sw('%2$s')  # rmDF(); lsDF(); dir(); expl()\n", Sys.time(), gw(), file)}
 lo= function(file='.RData'){catt('Loaded:', ll<- pas(load(file=file, .GlobalEnv))); lss(); cat('\a\a\a'); alarm();ll} # expl("C:/Users/Public/Music/Sample Music/Kalimba.mp3")} # expl("Z:/exe/testVoice.vbs")}
 
@@ -289,12 +335,18 @@ lo= function(file='.RData'){catt('Loaded:', ll<- pas(load(file=file, .GlobalEnv)
 #w save or save.image
 #p ... 0, 1, or 2 args
 #' 0 - save.image
-#' 1 -if char with  le=1 it is file , else object to save
+#' 1 - if char with  le=1 it is file , else object to save
 #' 2 - first is obj, second is file name
+#en	sa2()	        # 2014-04-04 16:22:51:: Image saved: lo('m:/50_HLP/out/.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
+#en	sa2('z')	    # 2014-04-04 16:25:07:: Image saved: lo('m:/50_HLP/out/z.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
+#en	sa2(cars)	    # 2014-04-25 17:07:03::  cars  saved: lo('m:/50_HLP/out/HLP_demo/out/cars.RData'); sw('m:/50_HLP/out/HLP_demo/out')  # rmDF(); lsDF(); dir(); expl()
+#en	sa2(cars, 'z') 	# 2014-04-25 17:07:22::  cars  saved: lo('m:/50_HLP/out/HLP_demo/out/z.RData'); sw('m:/50_HLP/out/HLP_demo/out')  # rmDF(); lsDF(); dir(); expl()
+#e	gw()
+#e	loo()	
 sa2= saaa= function(...){
 	dots <- list(...)                  
 	ar= deparse(substitute(...))
-	#strr(ar); strr(dots); catt('na(dots)=', na(dots), class(last(dots)), '====\n'); return(invisible(NULL))
+	#strr(ar); strr(dots); catt('na(dots)=', na(dots), class(last(dots)), '====\n'); # return(invisible(NULL))
 	
 	if(0){
 		file=  if(le(dots) == 0) '' else if(class(dots[[1]])=='character' &&  le(dots[[1]])==1) dots[[1]] else if(le(dots) == 1) ar[1] else dots[[2]]
@@ -305,11 +357,13 @@ sa2= saaa= function(...){
 	} else if(le(dots)==1 && le(dots[[1]])==1 && class(dots[[1]])=='character'){
 		file= dots[[1]]
 		save.image(file=sf('%s.RData', file)); catf("%s:: Image saved: lo('%s/%s.RData'); sw('%2$s')  # rmDF(); lsDF(); dir(); expl()\n", Sys.time(), gw(), file)
-	} else if(le(dots)==1  && NROW(dots[[1]]) >1 ) {  
+	#} else if(le(dots)==1  && NROW(dots[[1]]) >1 ) {  
+	} else if(le(dots)==1  && class(dots[[1]])!= 'character' ) {  
 		file= sf('%s.RData', ar[[1]])
 		save(list=ar, file=file); 
 		catf("%s::  %s  saved: lo('%s/%s'); sw('%3$s')  # rmDF(); lsDF(); dir(); expl()\n", Sys.time(), ar[[1]], getwd(), file)
-	} else if(le(dots)==2 && NROW(dots[[2]])==1 && class(dots[[2]]) =='character'){
+	#} else if(le(dots)==2 && NROW(dots[[2]])==1 && class(dots[[2]]) =='character'){
+	} else if(le(dots)==2 && class(dots[[2]]) =='character'){
 		x= deparse(substitute(dots[[1]]))
 		file= sf('%s.RData', dots[[2]])
 		save(list=ar[[1]], file=file); 
@@ -317,21 +371,6 @@ sa2= saaa= function(...){
 	} else {message('Wrong args');  strr(ar); strr(dots)}
 }
 
-if (0) {
-	sa2()
-	# 2014-04-04 16:22:51:: Image saved: lo('m:/50_HLP/out/.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
-	
-	sa2('z')
-	# 2014-04-04 16:25:07:: Image saved: lo('m:/50_HLP/out/z.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
-	
-	sa2(cars)
-	# 2014-04-04 20:52:11::  s  saved: lo('m:/50_HLP/out/s.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
-	
-	sa2(cars, 'z')
-	# 2014-04-04 20:52:18::  s  saved: lo('m:/50_HLP/out/z.RData'); sw('m:/50_HLP/out')  # rmDF(); lsDF(); dir(); expl()
-	gw()
-	loo()	
-}
 
 
 #' list of ../out/.RData files 
@@ -343,8 +382,9 @@ loo= function(patt='.RData'){gw();
 								, lo=sf('lo("%s")',f))), ~mtime)
 	} else warning(sf('no %s files in the directory %s', patt, gw()))
 	}	
-#' saved & remove
-#e  \dontrun{	ca= cars; srm(ca)	# creates ca.RData}
+
+#' save & rm()
+#en ca= cars; srm(ca)	# creates ca.RData
 srm= function(x) {saa(x, dsx<- deparse(substitute(x)) ); rm(list= dsx, envir = .GlobalEnv); catf('\n!!!    %s  is saved & removed  !!!\n', dsx)}
 
 
