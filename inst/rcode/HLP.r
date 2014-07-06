@@ -18,7 +18,7 @@
 #' @exportPattern "^[[:alpha:]]+"
 #' @export '%+%' '%-%'
 
-#' @import plyr 
+#' @import data.table  
 #' @docType package
 NULL
 
@@ -35,7 +35,9 @@ ch= as.character
 fa= factor
 nu= as.numeric
 df= data.frame
-#dtt= data.table
+
+stopifnot(require(data.table))
+dtt= data.table; ad= as.IDate; taa= tables  # vignette("datatable-faq")
 
 le= length
 he= head
@@ -79,6 +81,13 @@ prr= function(x, ma='', header=T) {if(header)catf('\n&&& %s == %s ==\n', ma, dep
 pas= function(x, sep=' ',collapse=' ')paste(x,sep=sep,collapse=collapse)
 #w grep
 gre2= function(patt='', pattNeg='^$', x, v=T, ...){ a=grepl(patt, x,...) & !grepl(pattNeg, x,...); return( if(v) x[a] else a) }
+#w dir
+dir2= function(patt='', pattNeg='^$', ...) gre2(patt, pattNeg, dir(...))
+
+#w str
+#'e strr(cars)
+strr= function(x) {catf('\nstr(%s):\n', desu(x)); str(x)}
+
 
 #w for grep + names + subset
 #e suss('Se', 'Wi',  iris, Sepal.Length < 4.5 )
@@ -176,7 +185,7 @@ expl= function(x= gw(), ...) browseURL(x, ...)
 #e gw()
 gw= function(){catf('gw: sw("%s");  expl()\n', gw<- getwd()); invisible(gw)} 
 
-#w [dir.create] + setwd
+#w dir.create + setwd
 #en sw('myTestDir/mySubdir');  sw('../..'); expl()
 sw= function (sDir, ...) {
 	dir.create(sDir, rec=T, ...)
@@ -219,8 +228,11 @@ lss= function(verb=T){ #object.sizes <-
 
 #' list of data.frames 
 #e lsDF(FALSE); a= lsDF(TRUE); hee(a); if(nrow(a)>0)srt(a, ~  + class + ds - size)
-lsDF= function(.all=F, ...){ b= mdply(ls(envir= .GlobalEnv, ... ), function(a){if(.all)catt(a); aa=get(a); b=df(); cl<- substr(class(aa)[1],1,4)
-				if(.all || any(class(aa) %in% c('data.frame','matrix','list',"metaMDS", "itemsets", "rules", "transactions") | is.list(aa))){
+if(0) lsDF= function(.all=F, ...){ b= mdply(ls(envir= .GlobalEnv, ... ), function(a){
+				if(.all) catt(a)
+				aa=get(a); b=df(); cl<- substr(class(aa)[1],1,4)
+				if(.all || any(class(aa) %in% c('data.frame','matrix','list',"metaMDS", "itemsets"
+								, "rules", "transactions") | is.list(aa))){
 					catf('srm( %-23s ) # %5.1f %5s %5s %3s %-30s\n', a, round(object.size(aa)/1e6, 1), cl, NROW(aa), NCOL(aa), substr(sNames(aa),1,1999))
 					b= df(ds=sf('srm(%20s)',a), size=nu(object.size(aa))/1e6, class=cl, nr=NROW(aa), nc=NCOL(aa)
 							, vars=substr(sNames(aa),1,99), ds0=a)[1,]
@@ -237,16 +249,42 @@ lsDF= function(.all=F, ...){ b= mdply(ls(envir= .GlobalEnv, ... ), function(a){i
 }
 
 
+#' list of data.frames 
+#e lsDF(FALSE); a= lsDF(TRUE); hee(a); if(nrow(a)>0)srt(a, ~  + class + ds - size)
+lsDF= function(.all=F, ...){ 
+	b= dtt(o=ls(envir= .GlobalEnv,...))[, ':='(ds=sf('srm(%20s)',o)
+						, cla= class(a<-get(o, envir= .GlobalEnv))[[1]]
+						, size=nu(object.size(a))/1e6, nr=NROW(a), nc=NCOL(a)
+						, vars=substr(pas(na(a)),1,99), isl=is.list(a)), by=o]		
+	if(!.all) b= b[isl | cla%in% c('data.frame','data.table','matrix','list',"metaMDS", "itemsets"
+								   , "rules", "transactions") ]
+	gc(T,T)		   
+	b[order(-size), list(ds,cla,size,nr,nc,vars)]
+}
+
+
+
 #' rm all
 rmall= function() rm(list=ls(envir = .GlobalEnv), envir = .GlobalEnv) # rmall()
 
+##' rm  all Data Frames, lists, matrixes
+##e rmDF()
+#rmDF= function(...) invisible(mdply(ls(envir =.GlobalEnv,... ),function(a){aa= get(a); b= df()
+#						if( class(aa)[1] %in% c('list')){catf('rm  %-20s %-30s\n', a, sNames(aa)); do.call(rm, list(a), envir =.GlobalEnv)}
+#						if( class(aa)[1] %in% c('data.table','data.frame','matrix')){catf('rm  %-20s %5s %3s %-30s\n', a, nrow(aa), ncol(aa), substr(sNames(aa),1,4999))
+#							do.call(rm, list(a), envir= .GlobalEnv)
+#						}}))
+
+
 #' rm  all Data Frames, lists, matrixes
 #e rmDF()
-rmDF= function(...) invisible(mdply(ls(envir =.GlobalEnv,... ),function(a){aa= get(a); b= df()
-						if( class(aa)[1] %in% c('list')){catf('rm  %-20s %-30s\n', a, sNames(aa)); do.call(rm, list(a), envir =.GlobalEnv)}
-						if( class(aa)[1] %in% c('data.table','data.frame','matrix')){catf('rm  %-20s %5s %3s %-30s\n', a, nrow(aa), ncol(aa), substr(sNames(aa),1,4999))
-							do.call(rm, list(a), envir= .GlobalEnv)
-						}}))
+rmDF= function(...){dtt(o=ls(envir =.GlobalEnv,... ))[, {aa= get(o);  cl=class(aa)[1]
+						if(cl  %in% c('list')){catf('rm  %-20s %-30s\n', o, sNames(aa)); do.call(rm, list(o), envir =.GlobalEnv)}
+						if(cl %in% c('data.table','data.frame','matrix')){catf('rm  %-20s %5s %3s %-30s\n', o, nrow(aa), ncol(aa), substr(sNames(aa),1,4999))
+							do.call(rm, list(o), envir= .GlobalEnv)
+						}}, by=o]
+		gc(T,T)
+	}
 
 #' install + library
 #p gh github username 
@@ -375,13 +413,20 @@ sa2= saaa= function(...){
 
 #' list of ../out/.RData files 
 #e  loo()
+#loo= function(patt='.RData'){gw(); 
+#	ff= dir(patt=patt, all.files =T)
+#	if(le(ff) > 0) { 
+#		srt(ldply(ff, function(f) c(mtime=ch(file.info(f)$mtime), size=round(file.info(f)$size/1e6, 1)
+#									, lo=sf('lo("%s")',f))), ~mtime)
+#	} else warning(sf('no %s files in the directory %s', patt, gw()))
+#}	
 loo= function(patt='.RData'){gw(); 
-	ff= dir(patt=patt, all.files =T)
-	if(le(ff) > 0) { 
-		srt(ldply(ff, function(f) c(mtime=ch(file.info(f)$mtime), size=round(file.info(f)$size/1e6, 1)
-								, lo=sf('lo("%s")',f))), ~mtime)
+	b= dtt(f= dir(patt=patt, all.files =T))
+	if(nrow(b) > 0) { b[,':='(mtime=ch(file.info(f)$mtime), size=round(file.info(f)$size/1e6, 1)
+						, lo=sf('lo("%s")',f)), by=f][order(mtime)]
 	} else warning(sf('no %s files in the directory %s', patt, gw()))
-	}	
+	b
+}	
 
 #' save & rm()
 #en ca= cars; srm(ca)	# creates ca.RData
@@ -452,6 +497,7 @@ srt= sortt= sort.data.frame= function(x, by){
 if(0){   #== Misc
 	libra(installr); updateR()
 	theFile= 'm:/50_HLP/out/packages/HLP.r'
+	theFile= 'm:/50_HLP/out/packages/HaLaP/inst/rcode/HLP.r'
 	gff('saved', theFile)
 	gff('sa\\(|===', theFile)
 	gff('\\bF\\b', theFile)
