@@ -18,7 +18,7 @@
 #' @exportPattern "^[[:alpha:]]+"
 #' @export '%+%' '%-%'
 
-#' @import data.table  
+#' @import data.table SOAR  
 #' @docType package
 NULL
 
@@ -37,7 +37,9 @@ nu= as.numeric
 df= data.frame
 
 stopifnot(require(data.table))
+stopifnot(require(SOAR)) 
 dtt= data.table; ad= as.IDate; taa= tables  # vignette("datatable-faq")
+sto= srm= Store
 
 le= length
 he= head
@@ -165,9 +167,10 @@ catt= function(...) {cat(...); cat('\n'); invisible(flush.console())}
 
 #'  catt with names
 #e	z= 1:5; v= letters[1:2];  catn(z, v, 7, u<-'a', v=88)
-catn= function(...) {  # catt('catn:')
+catn= function(...) { catt('\n__')  # catn:')
 	nargs= unlist(strsplit(ch(match.call()),'(),', fixed =T))[-1]  # names of args
-	for (i in 1:le(nargs)) catt(nargs[[i]],  '= ', list(...)[[i]])
+	#for (i in 1:le(nargs)) catt(nargs[[i]],  '= ', list(...)[[i]])
+	for (i in 1:le(nargs)) catf('%15s= |%s|\n', nargs[[i]], list(...)[[i]])
 }
 
 #w paste
@@ -199,59 +202,27 @@ sw= function (sDir, ...) {
 #e  nin(1:6, 4:9);  1:6 %-% 4:9
 nin= '%-%' = function(x, y) x[!(x %in% y)] # x not in y :   1:5 %-%  4:9 # `%-%` 
 
+
 #' returns matrix of memory consumption
-lss= function(verb=T){ #object.sizes <-
-	#llss= rev(sort(sapply(ls(envir=.GlobalEnv), function (object.name)
-#	llss= (sort(sapply(ls(envir=.GlobalEnv), function (object.name)
-#									round(object.size(get(object.name))/1048576,2)) ))
+#e x= lss(); lss(0)
+lss= function(minsize=.2, verb=T){ #object.sizes <-
+	llss= dtt(o=ls(envir=.GlobalEnv))[
+			,':='(Mb=round(nu(object.size(g<-get(o, envir=.GlobalEnv)))/1048576, 2)
+	        , sto= sf("srm(%19s)",o), cl=pas(class(g)), nr=NROW(g), nc=NCOL(g)), by=o][order(Mb)] 
 	
-	llss= (sort(sapply(ls(envir=.GlobalEnv), function (object.name){x= 1e-11
-									try({x=round(object.size(get(object.name))/1048576, 2) },s=T); x
-								})))
-	
-	
-	#if(verb)newwin(1,3,'Mem',{
 	if(verb)try({
-					#barplot(llss, main="Memory usage by object", ylab="Bytes", xlab="Variable name",
-					#col=heat.colors(length(object.sizes())))
-					#dotchart(llss, main="Memory usage by object, in M", xlab="Bytes")
-					pie(llss, labels = paste(names(llss), llss) , main="Memory usage by object, of tot " %+% memory.size()) #round(llss/1e6,2))
+				ww(); pie(llss$Mb, labels = llss$o, main=sf("Memory usage by object, of tot %s Mb", memory.size())) #round(llss/1e6,2))
 				}, s=T)
-	print(llss[1])    #print(llss)     
-	do.call(str,list(get(names(llss)[1]) ))
-	pr(llss)
-	catf(':: rm(%s)\n', pas(rev(names(llss)), collapse=','))
-	invisible(llss)
-}
-# x=lss(); x[x== 1e-11]
-
-
-#' list of data.frames 
-#e lsDF(FALSE); a= lsDF(TRUE); hee(a); if(nrow(a)>0)srt(a, ~  + class + ds - size)
-if(0) lsDF= function(.all=F, ...){ b= mdply(ls(envir= .GlobalEnv, ... ), function(a){
-				if(.all) catt(a)
-				aa=get(a); b=df(); cl<- substr(class(aa)[1],1,4)
-				if(.all || any(class(aa) %in% c('data.frame','matrix','list',"metaMDS", "itemsets"
-								, "rules", "transactions") | is.list(aa))){
-					catf('srm( %-23s ) # %5.1f %5s %5s %3s %-30s\n', a, round(object.size(aa)/1e6, 1), cl, NROW(aa), NCOL(aa), substr(sNames(aa),1,1999))
-					b= df(ds=sf('srm(%20s)',a), size=nu(object.size(aa))/1e6, class=cl, nr=NROW(aa), nc=NCOL(aa)
-							, vars=substr(sNames(aa),1,99), ds0=a)[1,]
-				}
-			})
-	if(nrow(b)>0){ hee(bs<- srt(b, ~-size)[, -1], 20) #  print(head(bs<- srt(b, ~-size)[, -1], 20), width=1600) 
-		#		catf('rm(%s)\n', pas(b$ds0,collapse=', '))
-		#		catf('rm(%s)\n', pas(bs$ds0,collapse=', '))
-		#		catf('save(%s\n, file="%s")\n', pas(b$ds,collapse=', '), gw())
-	}
-	
-	gc(T,T)
-	invisible(b)	
+	#print(llss[1])    #print(llss)     
+	do.call(strr, list(get(llss$o[1]) ))
+	catf(':: rm(%s)\n', pas(llss$o, collapse=','))
+	llss[Mb>= minsize] 
 }
 
 
 #' list of data.frames 
-#e lsDF(FALSE); a= lsDF(TRUE); hee(a); if(nrow(a)>0)srt(a, ~  + class + ds - size)
-lsDF= function(.all=F, ...){ 
+#e lsd(FALSE); a= lsDF(TRUE); hee(a); if(nrow(a)>0)srt(a, ~  + class + ds - size)
+lsd= lsDF= function(.all=F, ...){ 
 	b= dtt(o=ls(envir= .GlobalEnv,...))[, ':='(ds=sf('srm(%20s)',o)
 						, cla= class(a<-get(o, envir= .GlobalEnv))[[1]]
 						, size=nu(object.size(a))/1e6, nr=NROW(a), nc=NCOL(a)
@@ -263,18 +234,8 @@ lsDF= function(.all=F, ...){
 }
 
 
-
 #' rm all
 rmall= function() rm(list=ls(envir = .GlobalEnv), envir = .GlobalEnv) # rmall()
-
-##' rm  all Data Frames, lists, matrixes
-##e rmDF()
-#rmDF= function(...) invisible(mdply(ls(envir =.GlobalEnv,... ),function(a){aa= get(a); b= df()
-#						if( class(aa)[1] %in% c('list')){catf('rm  %-20s %-30s\n', a, sNames(aa)); do.call(rm, list(a), envir =.GlobalEnv)}
-#						if( class(aa)[1] %in% c('data.table','data.frame','matrix')){catf('rm  %-20s %5s %3s %-30s\n', a, nrow(aa), ncol(aa), substr(sNames(aa),1,4999))
-#							do.call(rm, list(a), envir= .GlobalEnv)
-#						}}))
-
 
 #' rm  all Data Frames, lists, matrixes
 #e rmDF()
@@ -413,24 +374,19 @@ sa2= saaa= function(...){
 
 #' list of ../out/.RData files 
 #e  loo()
-#loo= function(patt='.RData'){gw(); 
-#	ff= dir(patt=patt, all.files =T)
-#	if(le(ff) > 0) { 
-#		srt(ldply(ff, function(f) c(mtime=ch(file.info(f)$mtime), size=round(file.info(f)$size/1e6, 1)
-#									, lo=sf('lo("%s")',f))), ~mtime)
-#	} else warning(sf('no %s files in the directory %s', patt, gw()))
-#}	
-loo= function(patt='.RData'){gw(); 
-	b= dtt(f= dir(patt=patt, all.files =T))
-	if(nrow(b) > 0) { b[,':='(mtime=ch(file.info(f)$mtime), size=round(file.info(f)$size/1e6, 1)
-						, lo=sf('lo("%s")',f)), by=f][order(mtime)]
-	} else warning(sf('no %s files in the directory %s', patt, gw()))
-	b
+loo= function(patt='.RData', d= gw()){ gw(); 
+	b= dtt(f= dir(d, patt=patt, all.files =T, re=T))[, ff:= fp(d, f)]
+	if(nrow(b) > 0) { b[,':='(mtime=ch(file.info(ff)$mtime), size=round(file.info(ff)$size/1e6, 1)
+						, lo=sf('lo("%s")',ff)), by=f][order(mtime)]
+	} else warning(sf('no %s files in the directory %s', patt, d))
+	b[, ff:=NULL]
 }	
 
-#' save & rm()
-#en ca= cars; srm(ca)	# creates ca.RData
-srm= function(x) {saa(x, dsx<- deparse(substitute(x)) ); rm(list= dsx, envir = .GlobalEnv); catf('\n!!!    %s  is saved & removed  !!!\n', dsx)}
+
+
+##' save & rm()
+##en ca= cars; srm(ca)	# creates ca.RData
+#srm= Store  # function(x) {saa(x, dsx<- deparse(substitute(x)) ); rm(list= dsx, envir = .GlobalEnv); catf('\n!!!    %s  is saved & removed  !!!\n', dsx)}
 
 
 #' save an object to .csv
