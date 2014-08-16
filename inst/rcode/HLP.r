@@ -36,8 +36,8 @@ fa= factor
 nu= as.numeric
 df= data.frame
 
-stopifnot(require(data.table))
-stopifnot(require(SOAR)) 
+# stopifnot(require(data.table))
+# stopifnot(require(SOAR)) 
 dtt= data.table; ad= as.IDate; taa= tables  # vignette("datatable-faq")
 sto= srm= Store
 
@@ -139,11 +139,11 @@ ww= function(k=10, ...) if(onWin){
 			# 1   Availability  Bandwidth  Caption                    ConfigManagerErrorCode  ConfigManagerUserConfig  CreationClassName     Description                DeviceID         DisplayType  ErrorCleared  ErrorDescription  InstallDate  IsLocked  LastErrorCode  MonitorManufacturer       MonitorType                Name                       PixelsPerXLogicalInch  PixelsPerYLogicalInch  PNPDeviceID                               PowerManagementCapabilities  PowerManagementSupported  ScreenHeight  ScreenWidth  Status  StatusInfo  SystemCreationClassName  SystemName  
 			# 2 3                        ThinkPad Display 1600x900  0                       FALSE                    Win32_DesktopMonitor  ThinkPad Display 1600x900  DesktopMonitor1                                                                                     Lenovo                    ThinkPad Display 1600x900  ThinkPad Display 1600x900  96                     96                     DISPLAY\\LEN40B1\\4&2C1ABB3B&0&UID67568640                                                         1080          1920         OK                  Win32_ComputerSystem     T530-1122   
 			# 3 3                        Generic PnP Monitor        0                       FALSE                    Win32_DesktopMonitor  Generic PnP Monitor        DesktopMonitor2                                                                                     (Standard monitor types)  Generic PnP Monitor        Generic PnP Monitor        96                     96                     DISPLAY\\SAM0686\\5&24EFB498&0&UID1048850                                                          1080          1920         OK                  Win32_ComputerSystem     T530-1122   
-		prr(system("wmic desktopmonitor",  intern=TRUE))
+		prr(system("wmic desktopmonitor get",  intern=TRUE))
 	winprop= function(s='screenwidth') max(nu(system(sf("wmic desktopmonitor get %s", s),  intern=TRUE)), na.rm=T) #[2]
 			
-	windows( width= k/10 * winprop('screenwidth') / winprop('PixelsPerXLogicalInch')
-		  , height= k/10 * winprop('screenheight') / winprop('PixelsPerYLogicalInch'),...)
+	windows( width= k/10 * max(winprop('screenwidth'),  1920)/ winprop('PixelsPerXLogicalInch')
+		  , height= k/10 * max(winprop('screenheight'), 1080)/ winprop('PixelsPerYLogicalInch'),...)
 	}  else x11
 
 
@@ -200,7 +200,7 @@ sw= function (sDir, ...) {
 #' x \ y
 #r  x  which are not in  y
 #e  nin(1:6, 4:9);  1:6 %-% 4:9
-nin= '%-%' = function(x, y) x[!(x %in% y)] # x not in y :   1:5 %-%  4:9 # `%-%` 
+nin= '%-%' = setdiff(x, y)  # function(x, y) x[!(x %in% y)] # x not in y :   1:5 %-%  4:9 # `%-%` 
 
 
 #' returns matrix of memory consumption
