@@ -148,7 +148,7 @@ ww= function(k=10, ...) if(onWin){
 	}  else x11
 
 
-#' date & time 
+#' date &  time 
 #e DT()
 DT= DateTime= function(format = "%Y-%m-%d %H:%M:%S") strftime(Sys.time(), format) 
 
